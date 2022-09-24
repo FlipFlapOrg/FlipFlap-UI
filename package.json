@@ -7,9 +7,10 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "lint:format": "prettier --check --ignore-path .gitignore './**/*.{js,jsx,ts,tsx,json,yaml}'",
     "fix": "run-s fix:*",
     "fix:lint": "yarn lint --fix",
-    "fix:format": "prettier --write --ignore-path .gitignore './**/*.{js,jsx,ts,tsx,json}' --cache",
+    "fix:format": "prettier --write --ignore-path .gitignore './**/*.{js,jsx,ts,tsx,json,yaml}' --cache",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
