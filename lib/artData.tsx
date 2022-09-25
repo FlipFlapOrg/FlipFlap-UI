@@ -56,7 +56,7 @@ export const useArtData = () => {
         favorite_count: 20,
         is_favorite: false,
         comments: comments,
-        urls: ['/images/p00000a.jpg', '/imag/p00000b.jpg'],
+        urls: ['/images/p00000a.jpg', '/images/p00000b.jpg'],
       },
     ]
     return {
