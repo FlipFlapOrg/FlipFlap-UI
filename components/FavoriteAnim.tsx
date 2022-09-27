@@ -160,7 +160,6 @@ const DotContainer = styled.div`
   top: 0px;
   left: 0px;
   position: absolute;
-  display: flex;
   width: 100px;
   height: 100px;
 `
