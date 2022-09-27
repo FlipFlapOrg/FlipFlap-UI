@@ -8,7 +8,9 @@ import {
 } from 'react'
 import useSWR from 'swr'
 import { Client, useClient } from 'api'
+import { getManga as getMangaApi } from 'api/manga/[id]'
 import { recommend } from 'api/manga/recommend'
+import { Manga as MangaModel } from 'api/parser/manga'
 import { addBookmarks, removeBookmarks } from 'api/users/[user_id]/bookmarks'
 import { favorite, unfavorite } from 'api/users/[user_id]/faves'
 
@@ -26,25 +28,43 @@ export interface Manga {
   is_bookmarked: boolean
 }
 
+export const formatManga = (data: MangaModel): Manga => {
+  return {
+    id: data.manga_id,
+    description: {
+      title: data.title,
+      author: data.author,
+      links: data.manga_url.split(','),
+      cover_image_url: `/api/manga/${data.manga_id}/image/0`,
+    },
+    page_count: data.page_num,
+    favorite_count: data.faves_count,
+    is_favorite: data.is_faved,
+    is_bookmarked: data.is_bookmarked,
+  }
+}
+
 export const getRecommendedManga = async (
   client: Client,
   user_id: string
 ): Promise<Manga | null> => {
   try {
     const data = await recommend(client)(user_id)
-    return {
-      id: data.manga_id,
-      description: {
-        title: data.title,
-        author: data.author,
-        links: data.manga_url.split(','),
-        cover_image_url: `/api/manga/${data.manga_id}/image/0`,
-      },
-      page_count: data.page_num,
-      favorite_count: data.faves_count,
-      is_favorite: data.is_faved,
-      is_bookmarked: data.is_bookmarked,
-    }
+    return formatManga(data)
+  } catch (e) {
+    console.error(e)
+    return null
+  }
+}
+
+export const getManga = async (
+  client: Client,
+  manga_id: string,
+  user_id: string
+): Promise<Manga | null> => {
+  try {
+    const data = await getMangaApi(client)(user_id, manga_id)
+    return formatManga(data)
   } catch (e) {
     console.error(e)
     return null
@@ -97,8 +117,11 @@ export const useManga = () => {
     },
   })
 
-  const initializeAction = async (user_id: string) => {
-    const getFirstManga = getRecommendedManga(client, user_id)
+  const initializeAction = async (user_id: string, manga_id?: string) => {
+    const getFirstManga =
+      manga_id === undefined
+        ? getRecommendedManga(client, user_id)
+        : getManga(client, manga_id, user_id)
     const getSecondManga = getRecommendedManga(client, user_id)
 
     const manga = await getFirstManga
