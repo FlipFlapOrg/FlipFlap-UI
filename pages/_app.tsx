@@ -1,6 +1,7 @@
 import { css, Global } from '@emotion/react'
-import 'modern-normalize/modern-normalize.css'
 import type { AppProps } from 'next/app'
+import { ThemeProvider } from 'components/theme'
+import 'modern-normalize/modern-normalize.css'
 
 const resetATag = css`
   a {
@@ -13,7 +14,9 @@ const MyApp = ({ Component, pageProps }: AppProps) => {
   return (
     <>
       <Global styles={resetATag} />
-      <Component {...pageProps} />
+      <ThemeProvider>
+        <Component {...pageProps} />
+      </ThemeProvider>
     </>
   )
 }
