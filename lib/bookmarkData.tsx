@@ -30,7 +30,9 @@ export const getBookmarks = async (
 export const useBookmarks = () => {
   const client = useClient()
   //TODO: userID
-  const { data, error } = useSWR([client, 'tesso'], getBookmarks)
+  const { data, error } = useSWR('state:bookmarks', async (_) => {
+    return getBookmarks(client, 'tesso')
+  })
 
   return { data, isLoading: !error && !data, error }
 }
