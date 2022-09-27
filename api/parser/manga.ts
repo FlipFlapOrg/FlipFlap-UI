@@ -23,3 +23,5 @@ export const mangaSchema = z.object({
   is_bookmarked: z.boolean(),
   faves_count: z.number(),
 })
+
+export const bookmarksSchema = z.array(mangaSchema)
