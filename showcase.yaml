@@ -1,12 +1,11 @@
 type: runtime
-__image: "node:18.9.1"
+__image: 'node:18.9.1'
 
 work_dir: .
 
 entrypoint: yarn start
 
 http_proxy: 3000
-https: "on"
+https: 'on'
 
-cname:
-  flipflap.trap.games
+cname: flipflap.trap.games
