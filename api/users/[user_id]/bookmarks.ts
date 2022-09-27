@@ -3,8 +3,7 @@ export const getBookmarks = async (user_id: string) => {
     headers: {
       'Content-Type': 'application/json',
     },
-  })
-    .then((res) => res.json())
+  }).then((res) => res.json())
 }
 
 export const addBookmarks = async (user_id: string, manga_id: string) => {
