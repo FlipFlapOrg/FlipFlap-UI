@@ -1,7 +1,24 @@
 import { ThemeProvider as ThemeProviderBase } from '@emotion/react'
 import { PropsWithChildren } from 'react'
 
-const theme = {
+export interface CustomTheme {
+  background: {
+    primary: string
+    secondary: string
+    tertiary: string
+  },
+  ui: {
+    fav_red: string
+    bookmark_blue: string
+    blue: string
+    gray: string
+  },
+  text: {
+    primary: string
+  },
+}
+
+const theme: CustomTheme = {
   background: {
     primary: '#FFFFFF',
     secondary: '#E4E4F8',
