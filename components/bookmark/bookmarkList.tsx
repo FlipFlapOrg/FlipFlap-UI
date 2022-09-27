@@ -1,4 +1,4 @@
-import BookmarkListItem from './BookmarkLIstItem'
+import BookmarkListItem from './bookmarkListItem'
 import { Bookmark } from 'lib/bookmarkData'
 
 interface Props {
