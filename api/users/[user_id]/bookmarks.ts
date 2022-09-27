@@ -1,11 +1,15 @@
 import { Client } from 'api'
+import { Manga, mangaSchema } from 'api/parser/manga'
 
 export const getBookmarks = (client: Client) => async (user_id: string) => {
-  return await fetch(`${client.baseUrl}/api/users/${user_id}/bookmarks`, {
+  const res = await fetch(`${client.baseUrl}/api/users/${user_id}/bookmarks`, {
     headers: {
       'Content-Type': 'application/json',
     },
-  }).then((res) => res.json())
+  })
+
+  const data: Array<Manga> = await res.json()
+  return data.map((d) => mangaSchema.parse(d))
 }
 
 export const addBookmarks =
