@@ -6,16 +6,17 @@ export interface CustomTheme {
     primary: string
     secondary: string
     tertiary: string
-  },
+    button: string
+  }
   ui: {
     fav_red: string
     bookmark_blue: string
     blue: string
     gray: string
-  },
+  }
   text: {
     primary: string
-  },
+  }
 }
 
 const theme: CustomTheme = {
@@ -23,6 +24,7 @@ const theme: CustomTheme = {
     primary: '#FFFFFF',
     secondary: '#E4E4F8',
     tertiary: '#D9E8F6',
+    button: '#E9F3FC',
   },
   ui: {
     fav_red: '#E84444',
