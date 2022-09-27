@@ -8,7 +8,7 @@ on:
 
 env:
   GITEA_SSH_URL: 'ssh://git@git.trap.jp:2200/FlipFlap/FlipFlap-UI.git'
-  NEXT_PUBLIC_BASE_URL: https://${{ secrets.API_DOMAIN }}
+  NEXT_PUBLIC_BASE_URL: ${{ secrets.API_BASE_URL }}
   API_DOMAIN: ${{ secrets.API_DOMAIN }}
 
 concurrency:
