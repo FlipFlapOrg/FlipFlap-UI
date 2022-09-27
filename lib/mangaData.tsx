@@ -11,8 +11,7 @@ import useSWR from 'swr'
 import { Client, useClient } from 'api'
 import { getManga as getMangaApi } from 'api/manga/[id]'
 import { recommend } from 'api/manga/recommend'
-import { Manga as MangaModel } from 'api/parser/manga'
-import { Shop } from 'api/parser/manga'
+import { Manga as MangaModel, Shop } from 'api/parser/manga'
 import { addBookmarks, removeBookmarks } from 'api/users/[user_id]/bookmarks'
 import { favorite, unfavorite } from 'api/users/[user_id]/faves'
 
@@ -38,7 +37,7 @@ export const formatManga = (data: MangaModel, base_url: string): Manga => {
     description: {
       title: data.title,
       author: data.author,
-      links: data.manga_url.split(','),
+      links: data.next_info,
       cover_image_url: `/manga/${data.manga_id}/image/0`,
     },
     page_count: data.page_num,
@@ -54,7 +53,7 @@ export const getRecommendedManga = async (
 ): Promise<Manga | null> => {
   try {
     const data = await recommend(client)(user_id)
-    return formatManga(data)
+    return formatManga(data, client.baseUrl)
   } catch (e) {
     console.error(e)
     return null
@@ -68,7 +67,7 @@ export const getManga = async (
 ): Promise<Manga | null> => {
   try {
     const data = await getMangaApi(client)(user_id, manga_id)
-    return formatManga(data)
+    return formatManga(data, client.baseUrl)
   } catch (e) {
     console.error(e)
     return null

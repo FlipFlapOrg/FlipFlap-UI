@@ -5,11 +5,11 @@ export interface Manga {
   title: string
   author: string
   tags: string[]
-  manga_url: string
   page_num: number
   is_faved: boolean
   is_bookmarked: boolean
   faves_count: number
+  next_info: Shop[]
 }
 
 export interface Shop {
