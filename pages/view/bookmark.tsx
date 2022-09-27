@@ -2,16 +2,13 @@ import { css } from '@emotion/react'
 import styled from '@emotion/styled'
 import { NextPage } from 'next'
 import Link from 'next/link'
-import { useMemo } from 'react'
 import BookmarkList from 'components/Bookmark/BookmarkList'
 import { useBookmarks } from 'lib/bookmarkData'
 
 const BookMark: NextPage = () => {
   const { data, isLoading } = useBookmarks()
 
-  const bookmarks = useMemo(() => {
-    return data
-  }, [data])
+  const bookmarks = data
 
   if (isLoading) return <div>Loading</div>
 

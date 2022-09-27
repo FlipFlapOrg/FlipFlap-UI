@@ -54,6 +54,7 @@ const BookmarkListItem = (props: Props) => {
 const Container = styled.div`
   display: flex;
   align-items: stretch;
+  padding: 0 0.25rem;
   cursor: pointer;
   :hover {
     background-color: #f7f8f9;

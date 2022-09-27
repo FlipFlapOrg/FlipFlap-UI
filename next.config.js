@@ -3,7 +3,7 @@ const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
   images: {
-    domains: ['flipflap-server.trap.games'],
+    domains: [process.env.API_DOMAIN],
   },
 }
 
