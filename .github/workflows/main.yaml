@@ -7,7 +7,7 @@ on:
   pull_request:
 
 env:
-  env.GITEA_SSH_URL: 'ssh://git@git.trap.jp:2200/FlipFlap/FlipFlap-UI.git'
+  GITEA_SSH_URL: 'ssh://git@git.trap.jp:2200/FlipFlap/FlipFlap-UI.git'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
