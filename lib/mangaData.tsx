@@ -7,6 +7,7 @@ import {
   useState,
 } from 'react'
 import useSWR from 'swr'
+import { Client, useClient } from 'api'
 import { recommend } from 'api/manga/recommend'
 import { addBookmarks, removeBookmarks } from 'api/users/[user_id]/bookmarks'
 import { favorite, unfavorite } from 'api/users/[user_id]/faves'
@@ -26,10 +27,11 @@ export interface Manga {
 }
 
 export const getRecommendedManga = async (
+  client: Client,
   user_id: string
 ): Promise<Manga | null> => {
   try {
-    const data = await recommend(user_id)
+    const data = await recommend(client)(user_id)
     return {
       id: data.manga_id,
       description: {
@@ -86,6 +88,7 @@ export interface Data {
 }
 
 export const useManga = () => {
+  const client = useClient()
   const { data, error, mutate } = useSWR<Data>('state:manga', {
     fallbackData: {
       manga: [],
@@ -95,8 +98,8 @@ export const useManga = () => {
   })
 
   const initializeAction = async (user_id: string) => {
-    const getFirstManga = getRecommendedManga(user_id)
-    const getSecondManga = getRecommendedManga(user_id)
+    const getFirstManga = getRecommendedManga(client, user_id)
+    const getSecondManga = getRecommendedManga(client, user_id)
 
     const manga = await getFirstManga
 
@@ -147,7 +150,7 @@ export const useManga = () => {
       }
 
       const task = (async () => {
-        const manga = await getRecommendedManga(user_id)
+        const manga = await getRecommendedManga(client, user_id)
         if (manga === null) {
           return
         }
@@ -219,7 +222,7 @@ export const useManga = () => {
       throw new Error('Failed to favorite')
     }
 
-    await favorite(user_id, manga_id)
+    await favorite(client)(user_id, manga_id)
 
     mutate((prev) => {
       if (prev === undefined) {
@@ -246,7 +249,7 @@ export const useManga = () => {
       throw new Error('Failed to unfavorite')
     }
 
-    await unfavorite(user_id, manga_id)
+    await unfavorite(client)(user_id, manga_id)
 
     mutate((prev) => {
       if (prev === undefined) {
@@ -273,7 +276,7 @@ export const useManga = () => {
       throw new Error('Failed to add bookmarks')
     }
 
-    await addBookmarks(user_id, manga_id)
+    await addBookmarks(client)(user_id, manga_id)
 
     mutate((prev) => {
       if (prev === undefined) {
@@ -299,7 +302,7 @@ export const useManga = () => {
       throw new Error('Failed to remove bookmarks')
     }
 
-    await removeBookmarks(user_id, manga_id)
+    await removeBookmarks(client)(user_id, manga_id)
 
     mutate((prev) => {
       if (prev === undefined) {

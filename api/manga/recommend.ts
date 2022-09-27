@@ -1,7 +1,8 @@
+import { Client } from 'api'
 import { mangaSchema } from 'api/parser/manga'
 
-export const recommend = async (user_id: string) => {
-  return await fetch('/api/manga/recommend', {
+export const recommend = (client: Client) => async (user_id: string) => {
+  return await fetch(`${client.baseUrl}/api/manga/recommend`, {
     headers: {
       'Content-Type': 'application/json',
       'User-ID': user_id,
