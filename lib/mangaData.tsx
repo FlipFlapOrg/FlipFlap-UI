@@ -12,6 +12,7 @@ import { Client, useClient } from 'api'
 import { getManga as getMangaApi } from 'api/manga/[id]'
 import { recommend } from 'api/manga/recommend'
 import { Manga as MangaModel } from 'api/parser/manga'
+import { Shop } from 'api/parser/manga'
 import { addBookmarks, removeBookmarks } from 'api/users/[user_id]/bookmarks'
 import { favorite, unfavorite } from 'api/users/[user_id]/faves'
 
@@ -21,7 +22,7 @@ export interface Manga {
   description: {
     title: string
     author: string
-    links: string[]
+    links: Shop[]
     cover_image_url: string
   }
   page_count: number
