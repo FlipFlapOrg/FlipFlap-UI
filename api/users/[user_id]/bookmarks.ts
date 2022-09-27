@@ -1,8 +1,8 @@
 import { Client } from 'api'
 import { Manga, mangaSchema } from 'api/parser/manga'
 
-export const getBookmarks = (client: Client) => async (user_id: string) => {
-  const res = await fetch(`${client.baseUrl}/api/users/${user_id}/bookmarks`, {
+export const bookmarks = (client: Client) => async (user_id: string) => {
+  const res = await fetch(`${client.baseUrl}/users/${user_id}/bookmarks`, {
     headers: {
       'Content-Type': 'application/json',
     },

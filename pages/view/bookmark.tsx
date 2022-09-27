@@ -1,22 +1,21 @@
 import { NextPage } from 'next'
 import { useMemo } from 'react'
-import { Manga } from 'api/parser/manga'
 import BookmarkListItem from 'components/Bookmark/BookmarkLIstItem'
-import { useBookmark } from 'lib/bookmarkData'
+import { Bookmark, useBookmarks } from 'lib/bookmarkData'
 
 const BookMark: NextPage = () => {
-  const { manga, isLoading } = useBookmark()
+  const { data, isLoading } = useBookmarks()
 
   const bookmarks = useMemo(() => {
-    return manga?.data
-  }, [manga])
+    return data
+  }, [data])
 
-  if (typeof bookmarks === 'undefined') return <div>Loading</div>
+  if (isLoading) return <div>Loading</div>
 
-  const test: Manga = bookmarks![0]
+  const test: Bookmark = bookmarks![0]
   return (
     <>
-      <BookmarkListItem manga={test} />
+      <BookmarkListItem bookmark={test} />
     </>
   )
 }
