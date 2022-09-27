@@ -1,7 +1,7 @@
-import { NextPage } from "next";
+import { NextPage } from 'next'
 
 const BookMark: NextPage = () => {
-    return <></>;
+    return <></>
 }
 
 export default BookMark
