@@ -14,7 +14,7 @@ export const bookmarks = (client: Client) => async (user_id: string) => {
 export const addBookmarks =
   (client: Client) => async (user_id: string, manga_id: string) => {
     const res = await fetch(
-      `${client.baseUrl}/api/users/${user_id}/bookmarks`,
+      `${client.baseUrl}/users/${user_id}/bookmarks`,
       {
         method: 'POST',
         headers: {
@@ -32,7 +32,7 @@ export const addBookmarks =
 export const removeBookmarks =
   (client: Client) => async (user_id: string, manga_id: string) => {
     const res = await fetch(
-      `${client.baseUrl}/api/users/${user_id}/bookmarks`,
+      `${client.baseUrl}/users/${user_id}/bookmarks`,
       {
         method: 'DELETE',
         headers: {

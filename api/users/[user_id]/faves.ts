@@ -2,7 +2,7 @@ import { Client } from 'api'
 
 export const favorite =
   (client: Client) => async (user_id: string, manga_id: string) => {
-    const res = await fetch(`${client.baseUrl}/api/users/${user_id}/faves`, {
+    const res = await fetch(`${client.baseUrl}/users/${user_id}/faves`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -17,7 +17,7 @@ export const favorite =
 
 export const unfavorite =
   (client: Client) => async (user_id: string, manga_id: string) => {
-    const res = await fetch(`${client.baseUrl}/api/users/${user_id}/faves`, {
+    const res = await fetch(`${client.baseUrl}/users/${user_id}/faves`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',

@@ -16,6 +16,7 @@ import { addBookmarks, removeBookmarks } from 'api/users/[user_id]/bookmarks'
 import { favorite, unfavorite } from 'api/users/[user_id]/faves'
 
 export interface Manga {
+  base_url: string
   id: string
   description: {
     title: string
@@ -29,14 +30,15 @@ export interface Manga {
   is_bookmarked: boolean
 }
 
-export const formatManga = (data: MangaModel): Manga => {
+export const formatManga = (data: MangaModel, base_url: string): Manga => {
   return {
+    base_url,
     id: data.manga_id,
     description: {
       title: data.title,
       author: data.author,
       links: data.manga_url.split(','),
-      cover_image_url: `/api/manga/${data.manga_id}/image/0`,
+      cover_image_url: `/manga/${data.manga_id}/image/0`,
     },
     page_count: data.page_num,
     favorite_count: data.faves_count,
