@@ -5,7 +5,7 @@ import Image from 'next/image'
 interface Props {
   shopName: string
   href: string
-  icon?: string
+  icon: string
 }
 
 const ShopListItem = (props: Props) => {
@@ -13,18 +13,24 @@ const ShopListItem = (props: Props) => {
   return (
     <a href={href}>
       <Container>
-        <Image
-          src='/flipflap.png'
-          css={css`
-            border-radius: 50%;
-          `}
-          width={48}
-          height={48}
-          alt='logo'
-          objectFit='contain'
-          quality={100}
-        />
-        <H2>{shopName}</H2>
+        <Description>
+          <ImageContainer>
+            <Image
+              src={icon}
+              css={css`
+                border-radius: 50%;
+              `}
+              width={48}
+              height={48}
+              alt='logo'
+              objectFit='contain'
+              quality={100}
+            />
+          </ImageContainer>
+
+          <H2>{shopName}</H2>
+        </Description>
+
         <svg
           xmlns='http://www.w3.org/2000/svg'
           width='1em'
@@ -50,10 +56,23 @@ const ShopListItem = (props: Props) => {
 
 const Container = styled.div`
   display: flex;
+  justify-content: space-between;
+  padding: 1rem;
+`
+
+const ImageContainer = styled.div`
+  min-width: 48px;
+  min-height: 48px;
+  border-radius: 50%;
+  padding: auto;
 `
 
 const H2 = styled.h2`
   font-size: 1.125rem;
+  margin-left: 1rem;
+`
+const Description = styled.div`
+  display: flex;
 `
 
 export default ShopListItem

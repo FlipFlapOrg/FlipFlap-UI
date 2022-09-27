@@ -1,5 +1,6 @@
 import ShopListItem from './shopListItem'
-import { Shop } from 'lib/mangaData'
+import { Shop } from 'api/parser/manga'
+import { serviceIcon } from 'lib/serviceIcon'
 
 interface Props {
   shops: Shop[]
@@ -8,9 +9,17 @@ interface Props {
 const ShopList = (props: Props) => {
   return (
     <div>
-      {props.shops.map((shop, idx) => (
-        <ShopListItem key={idx} shopName={shop.name} href={shop.url} />
-      ))}
+      {props.shops.map((shop, idx) => {
+        const icon = serviceIcon(shop.service_name)
+        return (
+          <ShopListItem
+            key={idx}
+            shopName={shop.service_name}
+            href={shop.url}
+            icon={icon}
+          />
+        )
+      })}
     </div>
   )
 }

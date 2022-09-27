@@ -10,19 +10,16 @@ import {
 import useSWR from 'swr'
 import { Client, useClient } from 'api'
 import { recommend } from 'api/manga/recommend'
+import { Shop } from 'api/parser/manga'
 import { addBookmarks, removeBookmarks } from 'api/users/[user_id]/bookmarks'
 import { favorite, unfavorite } from 'api/users/[user_id]/faves'
-export interface Shop {
-  name: string
-  url: string
-}
 
 export interface Manga {
   id: string
   description: {
     title: string
     author: string
-    links: string[]
+    links: Shop[]
     cover_image_url: string
   }
   page_count: number
@@ -42,7 +39,7 @@ export const getRecommendedManga = async (
       description: {
         title: data.title,
         author: data.author,
-        links: data.manga_url.split(','),
+        links: data.next_info,
         cover_image_url: `${client.baseUrl}/manga/${data.manga_id}/image/0`,
       },
       page_count: data.page_num,

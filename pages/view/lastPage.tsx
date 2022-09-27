@@ -1,4 +1,3 @@
-import { css } from '@emotion/react'
 import styled from '@emotion/styled'
 import { NextPage } from 'next'
 import Image from 'next/image'
@@ -7,7 +6,7 @@ import useSWR from 'swr'
 import { useClient } from 'api'
 import ShopList from 'components/view/shopList'
 import ViewerHeader from 'components/view/viewerHeader'
-import { getRecommendedManga, Shop } from 'lib/mangaData'
+import { getRecommendedManga } from 'lib/mangaData'
 
 const LastPage: NextPage = () => {
   const client = useClient()
@@ -17,10 +16,6 @@ const LastPage: NextPage = () => {
   })
 
   if (!error && !data) return <div>Loading</div>
-  const shops: Shop[] = data!.description.links.map((link) => ({
-    name: 'ジャンプ',
-    url: link,
-  }))
   return (
     <Container>
       <ViewerHeader
@@ -35,7 +30,7 @@ const LastPage: NextPage = () => {
         objectFit='contain'
       />
       <H2>続きを読む</H2>
-      <ShopList shops={shops} />
+      <ShopList shops={data!.description.links} />
     </Container>
   )
 }
