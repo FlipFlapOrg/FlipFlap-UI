@@ -8,8 +8,8 @@ interface Props {
 const BookmarkList = (props: Props) => {
   return (
     <div>
-      {props.bookmarks.map((bookmark, idx) => (
-        <BookmarkListItem bookmark={bookmark} key={idx} />
+      {props.bookmarks.map((bookmark) => (
+        <BookmarkListItem bookmark={bookmark} key={bookmark.id} />
       ))}
     </div>
   )
