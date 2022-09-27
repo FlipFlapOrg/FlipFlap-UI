@@ -58,6 +58,9 @@ const Container = styled.div`
   display: flex;
   justify-content: space-between;
   padding: 1rem;
+  :hover {
+    background-color: #f7f8f9;
+  }
 `
 
 const ImageContainer = styled.div`
