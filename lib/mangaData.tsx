@@ -4,6 +4,7 @@ import {
   Dispatch,
   PropsWithChildren,
   SetStateAction,
+  useCallback,
   useState,
 } from 'react'
 import useSWR from 'swr'
@@ -117,67 +118,27 @@ export const useManga = () => {
     },
   })
 
-  const initializeAction = async (user_id: string, manga_id?: string) => {
-    const getFirstManga =
-      manga_id === undefined
-        ? getRecommendedManga(client, user_id)
-        : getManga(client, manga_id, user_id)
-    const getSecondManga = getRecommendedManga(client, user_id)
+  const initializeAction = useCallback(
+    async (user_id: string, manga_id?: string) => {
+      const getFirstManga =
+        manga_id === undefined
+          ? getRecommendedManga(client, user_id)
+          : getManga(client, manga_id, user_id)
+      const getSecondManga = getRecommendedManga(client, user_id)
 
-    const manga = await getFirstManga
+      const manga = await getFirstManga
 
-    let resolver: () => void
-    const stopper = new Promise<void>((resolve) => {
-      resolver = resolve
-    })
-
-    const task = (async () => {
-      const manga = await getSecondManga
-      if (manga === null) {
-        return
-      }
-      await stopper
-      mutate((prev) => {
-        if (prev === undefined) {
-          throw new Error('Failed to mutate')
-        }
-
-        return produce(prev, (draft) => {
-          draft.manga.push(initialMangaState(manga))
-          draft.task = undefined
-        })
+      let resolver: () => void
+      const stopper = new Promise<void>((resolve) => {
+        resolver = resolve
       })
-    })()
-
-    mutate(
-      {
-        manga: manga === null ? [] : [initialMangaState(manga)],
-        currentMangaIndex: 0,
-        task,
-      },
-      false
-    )
-
-    resolver!()
-  }
-
-  const readNextAction = async (user_id: string) => {
-    if (data === undefined || data.currentMangaIndex === undefined) {
-      throw new Error('Failed to read next')
-    }
-
-    // 読み込みが終わっている中で最後の漫画だった場合
-    if (data.currentMangaIndex === data.manga.length - 1) {
-      if (data.task !== undefined) {
-        await data.task
-      }
 
       const task = (async () => {
-        const manga = await getRecommendedManga(client, user_id)
+        const manga = await getSecondManga
         if (manga === null) {
           return
         }
-
+        await stopper
         mutate((prev) => {
           if (prev === undefined) {
             throw new Error('Failed to mutate')
@@ -189,33 +150,79 @@ export const useManga = () => {
           })
         })
       })()
+
+      mutate(
+        {
+          manga: manga === null ? [] : [initialMangaState(manga)],
+          currentMangaIndex: 0,
+          task,
+        },
+        false
+      )
+
+      resolver!()
+    },
+    [client, mutate]
+  )
+
+  const readNextAction = useCallback(
+    async (user_id: string) => {
+      if (data === undefined || data.currentMangaIndex === undefined) {
+        throw new Error('Failed to read next')
+      }
+
+      // 読み込みが終わっている中で最後の漫画だった場合
+      if (data.currentMangaIndex === data.manga.length - 1) {
+        if (data.task !== undefined) {
+          await data.task
+        }
+
+        const task = (async () => {
+          const manga = await getRecommendedManga(client, user_id)
+          if (manga === null) {
+            return
+          }
+
+          mutate((prev) => {
+            if (prev === undefined) {
+              throw new Error('Failed to mutate')
+            }
+
+            return produce(prev, (draft) => {
+              draft.manga.push(initialMangaState(manga))
+              draft.task = undefined
+            })
+          })
+        })()
+        mutate((prev) => {
+          if (prev === undefined) {
+            throw new Error('Failed to mutate')
+          }
+
+          return produce(prev, (draft) => {
+            draft.task = task
+          })
+        })
+      }
+      if (data.currentMangaIndex === data.manga.length - 1) {
+        console.error('Failed to read next')
+        return
+      }
+
       mutate((prev) => {
         if (prev === undefined) {
           throw new Error('Failed to mutate')
         }
 
         return produce(prev, (draft) => {
-          draft.task = task
+          draft.currentMangaIndex = draft.currentMangaIndex! + 1
         })
       })
-    }
-    if (data.currentMangaIndex === data.manga.length - 1) {
-      console.error('Failed to read next')
-      return
-    }
+    },
+    [client, data, mutate]
+  )
 
-    mutate((prev) => {
-      if (prev === undefined) {
-        throw new Error('Failed to mutate')
-      }
-
-      return produce(prev, (draft) => {
-        draft.currentMangaIndex = draft.currentMangaIndex! + 1
-      })
-    })
-  }
-
-  const readPrevAction = () => {
+  const readPrevAction = useCallback(() => {
     mutate((data) => {
       if (data === undefined) {
         throw new Error('Failed to mutate')
@@ -226,125 +233,140 @@ export const useManga = () => {
           draft.currentMangaIndex === 0 ? 0 : draft.currentMangaIndex! - 1
       })
     }, false)
-  }
+  }, [mutate])
 
-  const seekAction = (pageIndex: number) => {
-    mutate((data) => {
-      if (data === undefined) {
-        throw new Error('Failed to mutate')
+  const seekAction = useCallback(
+    (pageIndex: number) => {
+      mutate((data) => {
+        if (data === undefined) {
+          throw new Error('Failed to mutate')
+        }
+
+        return produce(data, (draft) => {
+          draft.manga[draft.currentMangaIndex!].pageIndex = pageIndex
+        })
+      }, false)
+    },
+    [mutate]
+  )
+
+  const favoriteAction = useCallback(
+    async (user_id: string, manga_id: string) => {
+      if (data === undefined || data.currentMangaIndex === undefined) {
+        throw new Error('Failed to favorite')
       }
 
-      return produce(data, (draft) => {
-        draft.manga[draft.currentMangaIndex!].pageIndex = pageIndex
-      })
-    }, false)
-  }
+      await favorite(client)(user_id, manga_id)
 
-  const favoriteAction = async (user_id: string, manga_id: string) => {
-    if (data === undefined || data.currentMangaIndex === undefined) {
-      throw new Error('Failed to favorite')
-    }
+      mutate((prev) => {
+        if (prev === undefined) {
+          throw new Error('Failed to mutate')
+        }
 
-    await favorite(client)(user_id, manga_id)
-
-    mutate((prev) => {
-      if (prev === undefined) {
-        throw new Error('Failed to mutate')
-      }
-
-      return produce(prev, (draft) => {
-        draft.manga = draft.manga.map((data) => {
-          if (data.id !== manga_id) {
-            return data
-          }
-          return {
-            ...data,
-            favorite_count: data.favorite_count + (data.is_favorite ? 0 : 1),
-            is_favorite: true,
-          }
+        return produce(prev, (draft) => {
+          draft.manga = draft.manga.map((data) => {
+            if (data.id !== manga_id) {
+              return data
+            }
+            return {
+              ...data,
+              favorite_count: data.favorite_count + (data.is_favorite ? 0 : 1),
+              is_favorite: true,
+            }
+          })
         })
       })
-    })
-  }
+    },
+    [client, data, mutate]
+  )
 
-  const unfavoriteAction = async (user_id: string, manga_id: string) => {
-    if (data === undefined || data.currentMangaIndex === undefined) {
-      throw new Error('Failed to unfavorite')
-    }
-
-    await unfavorite(client)(user_id, manga_id)
-
-    mutate((prev) => {
-      if (prev === undefined) {
-        throw new Error('Failed to mutate')
+  const unfavoriteAction = useCallback(
+    async (user_id: string, manga_id: string) => {
+      if (data === undefined || data.currentMangaIndex === undefined) {
+        throw new Error('Failed to unfavorite')
       }
 
-      return produce(prev, (draft) => {
-        draft.manga = draft.manga.map((data) => {
-          if (data.id !== manga_id) {
-            return data
-          }
-          return {
-            ...data,
-            favorite_count: data.favorite_count - (data.is_favorite ? 1 : 0),
-            is_favorite: false,
-          }
+      await unfavorite(client)(user_id, manga_id)
+
+      mutate((prev) => {
+        if (prev === undefined) {
+          throw new Error('Failed to mutate')
+        }
+
+        return produce(prev, (draft) => {
+          draft.manga = draft.manga.map((data) => {
+            if (data.id !== manga_id) {
+              return data
+            }
+            return {
+              ...data,
+              favorite_count: data.favorite_count - (data.is_favorite ? 1 : 0),
+              is_favorite: false,
+            }
+          })
         })
       })
-    })
-  }
+    },
+    [client, data, mutate]
+  )
 
-  const addBookmarkAction = async (user_id: string, manga_id: string) => {
-    if (data === undefined || data.currentMangaIndex === undefined) {
-      throw new Error('Failed to add bookmarks')
-    }
-
-    await addBookmarks(client)(user_id, manga_id)
-
-    mutate((prev) => {
-      if (prev === undefined) {
-        throw new Error('Failed to mutate')
+  const addBookmarkAction = useCallback(
+    async (user_id: string, manga_id: string) => {
+      if (data === undefined || data.currentMangaIndex === undefined) {
+        throw new Error('Failed to add bookmarks')
       }
 
-      return produce(prev, (draft) => {
-        draft.manga = draft.manga.map((data) => {
-          if (data.id !== manga_id) {
-            return data
-          }
-          return {
-            ...data,
-            is_bookmarked: true,
-          }
+      await addBookmarks(client)(user_id, manga_id)
+
+      mutate((prev) => {
+        if (prev === undefined) {
+          throw new Error('Failed to mutate')
+        }
+
+        return produce(prev, (draft) => {
+          draft.manga = draft.manga.map((data) => {
+            if (data.id !== manga_id) {
+              return data
+            }
+            return {
+              ...data,
+              is_bookmarked: true,
+            }
+          })
         })
       })
-    })
-  }
+    },
+    [client, data, mutate]
+  )
 
-  const removeBookmarkAction = async (user_id: string, manga_id: string) => {
-    if (data === undefined || data.currentMangaIndex === undefined) {
-      throw new Error('Failed to remove bookmarks')
-    }
-
-    await removeBookmarks(client)(user_id, manga_id)
-
-    mutate((prev) => {
-      if (prev === undefined) {
-        throw new Error('Failed to mutate')
+  const removeBookmarkAction = useCallback(
+    async (user_id: string, manga_id: string) => {
+      if (data === undefined || data.currentMangaIndex === undefined) {
+        throw new Error('Failed to remove bookmarks')
       }
 
-      return produce(prev, (draft) => {
-        draft.manga = draft.manga.map((data) => {
-          if (data.id !== manga_id) {
-            return data
-          }
-          return {
-            ...data,
-            is_bookmarked: false,
-          }
+      await removeBookmarks(client)(user_id, manga_id)
+
+      mutate((prev) => {
+        if (prev === undefined) {
+          throw new Error('Failed to mutate')
+        }
+
+        return produce(prev, (draft) => {
+          draft.manga = draft.manga.map((data) => {
+            if (data.id !== manga_id) {
+              return data
+            }
+            return {
+              ...data,
+              is_bookmarked: false,
+            }
+          })
         })
       })
-    })
-  }
+    },
+    [client, data, mutate]
+  )
 
   return {
     data: {
