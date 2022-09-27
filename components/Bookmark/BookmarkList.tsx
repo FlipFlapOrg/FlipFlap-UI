@@ -16,7 +16,7 @@ const BookmarkList = (props: Props) => {
   )
 }
 const Container = styled.div`
-  padding: 0.25rem;
+  padding: 0 0.25rem;
 `
 
 export default BookmarkList

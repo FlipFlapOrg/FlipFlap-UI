@@ -55,6 +55,9 @@ const Container = styled.div`
   display: flex;
   align-items: stretch;
   cursor: pointer;
+  :hover {
+    background-color: #f7f8f9;
+  }
 `
 
 const Title = styled.h2`
@@ -71,12 +74,12 @@ const Description = styled.div`
   align-items: center;
   flex-grow: 1;
   border-bottom: 1px solid #d7d7e3;
-  padding: 0.5rem;
-  margin: 0.5rem;
+  padding: 0 0.25rem;
+  margin: 0 0.25rem;
 `
 
 const ImageContainer = styled.div`
-  margin: 0.5rem 0;
+  margin: 0.125rem 0;
 `
 
 export default BookmarkListItem
