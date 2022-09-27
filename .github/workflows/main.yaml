@@ -110,6 +110,7 @@ jobs:
       - name: Commit (include build)
         run: |
           git add .next -f
+          git add node_modules -f
           git commit -m "[build] ${{ github.event.head_commit.id }}"
       - name: Push Changes
         env:
