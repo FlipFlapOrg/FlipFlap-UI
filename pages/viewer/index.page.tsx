@@ -9,6 +9,13 @@ import { Shop } from 'api/parser/manga'
 import { MangaState, useManga } from 'lib/mangaData'
 import { useUserData } from 'lib/userData'
 
+export const hideScrollBar = css`
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+`
+
 /**
  * page は 0-indexed
  */
@@ -116,6 +123,7 @@ const PageContainerY = styled.div`
   scroll-snap-type: y mandatory;
   display: flex;
   flex-direction: column;
+  ${hideScrollBar}
 `
 
 const PageContainer = styled.div`
@@ -129,6 +137,7 @@ const PageContainer = styled.div`
   scroll-snap-type: x mandatory;
   display: flex;
   flex-direction: row-reverse;
+  ${hideScrollBar}
 `
 
 const PageElement = styled.div`
