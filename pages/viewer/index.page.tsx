@@ -2,6 +2,7 @@ import { css } from '@emotion/react'
 import styled from '@emotion/styled'
 import { NextPage } from 'next'
 import Image from 'next/image'
+import { useRouter } from 'next/router'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import BookmarkButton from './components/BookmarkButton'
 import FavoriteButton from './components/FavoriteButton'
@@ -9,11 +10,11 @@ import ShareButton from './components/ShareButton'
 import { SkeltonCircle } from './components/Skeletons'
 import { Client, useClient } from 'api'
 import { Shop } from 'api/parser/manga'
+import FavoriteAnim, { useFavoriteAnim } from 'components/FavoriteAnim'
 import { Toggle } from 'components/Toggle'
 import { MangaState, useManga } from 'lib/mangaData'
 import { serviceIcon } from 'lib/serviceIcon'
 import { useUserData } from 'lib/userData'
-import FavoriteAnim, { useFavoriteAnim } from 'components/FavoriteAnim'
 
 export const hideScrollBar = css`
   scrollbar-width: none;
@@ -36,13 +37,16 @@ const Viewer: NextPage = () => {
     mutate: { initialize, readNext, readPrev, seek },
   } = useManga()
   const { data: userData, error: userError } = useUserData()
+  const router = useRouter()
+  const { id } = router.query
 
   const user_id = useMemo(() => {
     return userData?.id ?? 'unknown'
   }, [userData?.id])
 
   useEffect(() => {
-    initialize(user_id)
+    initialize(user_id, id as string | undefined)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialize, user_id])
 
   const reachHandler = useCallback(

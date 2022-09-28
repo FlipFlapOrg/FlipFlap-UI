@@ -11,7 +11,7 @@ interface Props {
 const BookmarkListItem = (props: Props) => {
   const bookmark = props.bookmark
   return (
-    <Link href={`/view/${bookmark.id}`}>
+    <Link href={`/viewer?id=${bookmark.id}`}>
       <Container>
         <ImageContainer>
           <Image
