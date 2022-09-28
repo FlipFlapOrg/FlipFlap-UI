@@ -5,7 +5,7 @@ import Link from 'next/link'
 
 const BookmarkListIconButton = () => {
   return (
-    <Link href='/view/bookmark'>
+    <Link href='/bookmark'>
       <Container>
         <Image
           src='/flipflap.png'
