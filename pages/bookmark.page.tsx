@@ -2,9 +2,9 @@ import { css } from '@emotion/react'
 import styled from '@emotion/styled'
 import { NextPage } from 'next'
 import Link from 'next/link'
+import { Toggle } from 'components/Toggle'
 import BookmarkList from 'components/bookmark/bookmarkList'
 import { useBookmarks } from 'lib/bookmarkData'
-import { Toggle } from 'components/Toggle'
 
 const BookMark: NextPage = () => {
   const { data: bookmarks, isLoading } = useBookmarks()

@@ -11,8 +11,8 @@ import { Client, useClient } from 'api'
 import { Shop } from 'api/parser/manga'
 import { Toggle } from 'components/Toggle'
 import { MangaState, useManga } from 'lib/mangaData'
-import { useUserData } from 'lib/userData'
 import { serviceIcon } from 'lib/serviceIcon'
+import { useUserData } from 'lib/userData'
 
 export const hideScrollBar = css`
   scrollbar-width: none;

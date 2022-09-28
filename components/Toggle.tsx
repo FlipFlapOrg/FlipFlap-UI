@@ -1,7 +1,7 @@
 import { css } from '@emotion/react'
 import Image from 'next/image'
-import { PropsWithCss } from 'lib/types'
 import Link from 'next/link'
+import { PropsWithCss } from 'lib/types'
 
 export interface ToggleProps {
   state: 'viewer' | 'bookmark'
