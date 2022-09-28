@@ -91,30 +91,41 @@ const Viewer: NextPage = () => {
   }
 
   return (
-    <PageContainerY>
-      {manga.map((mangaEle, i) => {
-        return (
-          <div
-            key={i}
-            css={css`
-              scroll-snap-align: start;
-              scroll-snap-stop: always;
-            `}
-          >
-            <ViewerPageRow
-              manga={mangaEle}
-              idx={i}
-              user_id={user_id}
-              reachHandler={reachHandler}
-              reachPageHandler={reachPageHandler}
-              currentPage={mangaEle.pageIndex}
-            />
-          </div>
-        )
-      })}
-    </PageContainerY>
+    <PageContainer>
+      <PageContainerY>
+        {manga.map((mangaEle, i) => {
+          return (
+            <div
+              key={i}
+              css={css`
+                scroll-snap-align: start;
+                scroll-snap-stop: always;
+              `}
+            >
+              <ViewerPageRow
+                manga={mangaEle}
+                idx={i}
+                user_id={user_id}
+                reachHandler={reachHandler}
+                reachPageHandler={reachPageHandler}
+                currentPage={mangaEle.pageIndex}
+              />
+            </div>
+          )
+        })}
+      </PageContainerY>
+    </PageContainer>
   )
 }
+
+const PageContainer = styled.div`
+  margin: 0 auto;
+  max-width: 640px;
+  width: 100%;
+  height: 100vh;
+  position: relative;
+  overflow: hidden;
+`
 
 const PageContainerY = styled.div`
   margin: 0 auto;
@@ -130,7 +141,7 @@ const PageContainerY = styled.div`
   ${hideScrollBar}
 `
 
-const PageContainer = styled.div`
+const PageContainerX = styled.div`
   margin: 0 auto;
   max-width: 640px;
   width: 100%;
@@ -270,7 +281,7 @@ const ViewerPageRow: React.FC<ViewerPageRowProps> = ({
         isBookmarked={manga.is_bookmarked}
         isShow={isHeaderShow}
       />
-      <PageContainer ref={ref} onClick={onClickHandler}>
+      <PageContainerX ref={ref} onClick={onClickHandler}>
         {Array.from({ length: manga.page_count - 1 }).map((_, i) => {
           return (
             <PageElement key={i} ref={pagesRef.current[i]}>
@@ -299,7 +310,7 @@ const ViewerPageRow: React.FC<ViewerPageRowProps> = ({
             favorite_count={manga.favorite_count}
           />
         </PageElement>
-      </PageContainer>
+      </PageContainerX>
     </PageElement>
   )
 }
