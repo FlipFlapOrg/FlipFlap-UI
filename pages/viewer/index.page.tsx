@@ -9,6 +9,7 @@ import ShareButton from './components/ShareButton'
 import { SkeltonCircle } from './components/Skeletons'
 import { Client, useClient } from 'api'
 import { Shop } from 'api/parser/manga'
+import { Toggle } from 'components/Toggle'
 import { MangaState, useManga } from 'lib/mangaData'
 import { useUserData } from 'lib/userData'
 
@@ -280,6 +281,22 @@ const ViewerPageRow: React.FC<ViewerPageRowProps> = ({
         onBookmark={onBookmark}
         isBookmarked={manga.is_bookmarked}
         isShow={isHeaderShow}
+      />
+      <Toggle
+        state='viewer'
+        cssProp={css`
+          position: absolute;
+          z-index: 1;
+          bottom: 16px;
+          right: 0;
+          left: 0;
+          margin: 0 auto;
+
+          transform: ${isHeaderShow || currentPage === manga.page_count - 1
+            ? 'translateY(0px)'
+            : 'translateY(calc(101% + 16px))'};
+          transition: transform 0.2s ease-out;
+        `}
       />
       <PageContainerX ref={ref} onClick={onClickHandler}>
         {Array.from({ length: manga.page_count - 1 }).map((_, i) => {
