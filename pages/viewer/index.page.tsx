@@ -13,6 +13,7 @@ import { Toggle } from 'components/Toggle'
 import { MangaState, useManga } from 'lib/mangaData'
 import { serviceIcon } from 'lib/serviceIcon'
 import { useUserData } from 'lib/userData'
+import FavoriteAnim, { useFavoriteAnim } from 'components/FavoriteAnim'
 
 export const hideScrollBar = css`
   scrollbar-width: none;
@@ -184,7 +185,7 @@ const ViewerPageRow: React.FC<ViewerPageRowProps> = ({
 }) => {
   const client = useClient()
   const {
-    mutate: { addBookmark, removeBookmark },
+    mutate: { addBookmark, removeBookmark, favorite, unfavorite },
   } = useManga()
 
   const onBookmark = useCallback(
@@ -199,6 +200,7 @@ const ViewerPageRow: React.FC<ViewerPageRowProps> = ({
   )
 
   const ref = useRef<HTMLDivElement>(null)
+  const { showFavoriteAnim, ref: favoriteAnimRef } = useFavoriteAnim()
 
   const pagesRef = useRef<Array<React.RefObject<HTMLDivElement>>>([])
   Array.from({ length: manga.page_count }).forEach((_, i) => {
@@ -241,6 +243,26 @@ const ViewerPageRow: React.FC<ViewerPageRowProps> = ({
     },
     [currentPage, manga.page_count]
   )
+  const onDoubleClickHandler = useCallback(
+    (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+      e.preventDefault()
+
+      if (manga.is_favorite) {
+        unfavorite(user_id, manga.id)
+      } else {
+        favorite(user_id, manga.id)
+        showFavoriteAnim()
+      }
+    },
+    [
+      favorite,
+      manga.id,
+      manga.is_favorite,
+      showFavoriteAnim,
+      unfavorite,
+      user_id,
+    ]
+  )
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -276,6 +298,22 @@ const ViewerPageRow: React.FC<ViewerPageRowProps> = ({
         overflow: hidden;
       `}
     >
+      <div
+        css={css`
+          position: fixed;
+          z-index: 2;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          margin: auto;
+          pointer-events: none;
+          display: grid;
+          place-items: center;
+        `}
+      >
+        <FavoriteAnim ref={favoriteAnimRef} />
+      </div>
       <ViewerPageHeader
         title={manga.description.title}
         author={manga.description.author}
@@ -299,7 +337,11 @@ const ViewerPageRow: React.FC<ViewerPageRowProps> = ({
           transition: transform 0.2s ease-out;
         `}
       />
-      <PageContainerX ref={ref} onClick={onClickHandler}>
+      <PageContainerX
+        ref={ref}
+        onClick={onClickHandler}
+        onDoubleClick={onDoubleClickHandler}
+      >
         {Array.from({ length: manga.page_count - 1 }).map((_, i) => {
           return (
             <PageElement key={i} ref={pagesRef.current[i]}>
