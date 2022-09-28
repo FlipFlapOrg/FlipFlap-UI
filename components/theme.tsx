@@ -7,6 +7,7 @@ export interface CustomTheme {
     primary_hover: string
     secondary: string
     tertiary: string
+    button: string
   }
   ui: {
     fav_red: string
@@ -25,6 +26,7 @@ const theme: CustomTheme = {
     primary_hover: '#F7F8F9',
     secondary: '#E4E4F8',
     tertiary: '#F3F9FF',
+    button: '#E9F3FC',
   },
   ui: {
     fav_red: '#E84444',
