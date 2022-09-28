@@ -174,7 +174,7 @@ export const useManga = () => {
       }
 
       // 読み込みが終わっている中で最後の漫画だった場合
-      if (data.currentMangaIndex === data.manga.length - 1) {
+      if (data.currentMangaIndex === data.manga.length - 2) {
         if (data.task !== undefined) {
           await data.task
         }
@@ -206,7 +206,7 @@ export const useManga = () => {
           })
         })
       }
-      if (data.currentMangaIndex === data.manga.length - 1) {
+      if (data.currentMangaIndex === data.manga.length - 2) {
         console.error('Failed to read next')
         return
       }

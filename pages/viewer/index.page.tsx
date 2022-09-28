@@ -2,11 +2,11 @@ import { css } from '@emotion/react'
 import styled from '@emotion/styled'
 import { NextPage } from 'next'
 import Image from 'next/image'
-import React, { useEffect, useMemo } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef } from 'react'
 import { SkeltonCircle } from './components/Skeletons'
 import { Client, useClient } from 'api'
 import { Shop } from 'api/parser/manga'
-import { useManga } from 'lib/mangaData'
+import { MangaState, useManga } from 'lib/mangaData'
 import { useUserData } from 'lib/userData'
 
 /**
@@ -17,25 +17,44 @@ const imageUrl = (client: Client, manga_id: string, page: number) => {
 }
 
 const Viewer: NextPage = () => {
-  const client = useClient()
   const {
     data: { manga, currentMangaIndex },
     error,
-    mutate: { initialize },
+    mutate: { initialize, readNext, readPrev },
   } = useManga()
   const { data: userData, error: userError } = useUserData()
 
+  const user_id = useMemo(() => {
+    return userData?.id ?? 'unknown'
+  }, [userData?.id])
+
   useEffect(() => {
-    initialize(userData?.id ?? 'unknown')
-  }, [initialize, userData?.id])
+    initialize(user_id)
+  }, [initialize, user_id])
 
-  const currentManga = useMemo(() => {
-    if (manga === undefined || currentMangaIndex === undefined) {
-      return undefined
-    }
+  const reachHandler = useCallback(
+    (idx: number) => {
+      if (currentMangaIndex === undefined) {
+        return
+      }
 
-    return manga[currentMangaIndex]
-  }, [currentMangaIndex, manga])
+      console.log('reachHandler', idx, currentMangaIndex)
+
+      if (idx === currentMangaIndex) {
+        return
+      }
+      if (idx > currentMangaIndex) {
+        for (let i = currentMangaIndex + 1; i <= idx; i++) {
+          readNext(user_id)
+        }
+      } else {
+        for (let i = currentMangaIndex - 1; i >= idx; i--) {
+          readPrev()
+        }
+      }
+    },
+    [currentMangaIndex, readNext, readPrev, user_id]
+  )
 
   if (error || userError) {
     return <div>Failed to load</div>
@@ -44,31 +63,46 @@ const Viewer: NextPage = () => {
   if (
     manga === undefined ||
     currentMangaIndex === undefined ||
-    currentManga === undefined ||
     userData === undefined
   ) {
     return <SkeltonCircle size={300} />
   }
 
   return (
-    <PageContainer>
-      {Array.from({ length: currentManga.page_count - 1 }).map((_, i) => {
+    <PageContainerY>
+      {manga.map((mangaEle, i) => {
         return (
-          <ViewerPage
+          <div
             key={i}
-            image_url={imageUrl(client, currentManga.id, i)}
-          />
+            css={css`
+              scroll-snap-align: start;
+              scroll-snap-stop: always;
+            `}
+          >
+            <ViewerPageRow
+              manga={mangaEle}
+              idx={i}
+              reachHandler={reachHandler}
+            />
+          </div>
         )
       })}
-      <ViewerPageInfo
-        cover_image_url={`${currentManga.base_url}${currentManga.description.cover_image_url}`}
-        links={currentManga.description.links}
-        title={currentManga.description.title}
-        author={currentManga.description.author}
-      />
-    </PageContainer>
+    </PageContainerY>
   )
 }
+
+const PageContainerY = styled.div`
+  margin: 0 auto;
+  max-width: 640px;
+  width: 100%;
+  height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+  overflow-y: scroll;
+  scroll-snap-type: y mandatory;
+  display: flex;
+  flex-direction: column;
+`
 
 const PageContainer = styled.div`
   margin: 0 auto;
@@ -92,7 +126,61 @@ const PageElement = styled.div`
   flex-basis: 100%;
 `
 
-interface ViewerPageRow {}
+interface ViewerPageRowProps {
+  manga: MangaState
+  idx: number
+  reachHandler: (_idx: number) => void
+}
+const ViewerPageRow: React.FC<ViewerPageRowProps> = ({
+  manga,
+  idx,
+  reachHandler,
+}) => {
+  const client = useClient()
+
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            reachHandler(idx)
+          }
+        })
+      },
+      {
+        root: null,
+        rootMargin: '0px',
+        threshold: 0.5,
+      }
+    )
+
+    if (ref.current === null) {
+      return
+    }
+
+    observer.observe(ref.current)
+
+    return () => {
+      observer.disconnect()
+    }
+  }, [idx, reachHandler])
+
+  return (
+    <PageContainer ref={ref}>
+      {Array.from({ length: manga.page_count - 1 }).map((_, i) => {
+        return <ViewerPage key={i} image_url={imageUrl(client, manga.id, i)} />
+      })}
+      <ViewerPageInfo
+        cover_image_url={`${manga.base_url}${manga.description.cover_image_url}`}
+        links={manga.description.links}
+        title={manga.description.title}
+        author={manga.description.author}
+      />
+    </PageContainer>
+  )
+}
 
 interface ViewerPageProps {
   image_url: string
