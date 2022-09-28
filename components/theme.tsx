@@ -4,25 +4,27 @@ import { PropsWithChildren } from 'react'
 export interface CustomTheme {
   background: {
     primary: string
+    primary_hover: string
     secondary: string
     tertiary: string
-  },
+  }
   ui: {
     fav_red: string
     bookmark_blue: string
     blue: string
     gray: string
-  },
+  }
   text: {
     primary: string
-  },
+  }
 }
 
 const theme: CustomTheme = {
   background: {
     primary: '#FFFFFF',
+    primary_hover: '#F7F8F9',
     secondary: '#E4E4F8',
-    tertiary: '#D9E8F6',
+    tertiary: '#F3F9FF',
   },
   ui: {
     fav_red: '#E84444',
