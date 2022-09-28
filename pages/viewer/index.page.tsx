@@ -173,10 +173,6 @@ const ViewerPageRow: React.FC<ViewerPageRowProps> = ({
   const {
     mutate: { addBookmark, removeBookmark },
   } = useManga()
-  const { data: userData } = useUserData()
-  const user_id = useMemo(() => {
-    return userData?.id ?? 'unknown'
-  }, [userData?.id])
 
   const onBookmark = useCallback(
     (to: boolean) => {
@@ -295,13 +291,13 @@ const ViewerPageRow: React.FC<ViewerPageRowProps> = ({
             author={manga.description.author}
             idx={idx}
             user_id={user_id}
-          page={manga.page_count - 1}
+            page={manga.page_count - 1}
             reachPageHandler={reachPageHandler}
             isBookmark={manga.is_bookmarked}
-          isFavorite={manga.is_favorite}
-          manga_id={manga.id}
-          favorite_count={manga.favorite_count}
-        />
+            isFavorite={manga.is_favorite}
+            manga_id={manga.id}
+            favorite_count={manga.favorite_count}
+          />
         </PageElement>
       </PageContainer>
     </PageElement>
