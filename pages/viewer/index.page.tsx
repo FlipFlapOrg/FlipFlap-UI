@@ -20,7 +20,7 @@ const Viewer: NextPage = () => {
   const {
     data: { manga, currentMangaIndex },
     error,
-    mutate: { initialize, readNext, readPrev },
+    mutate: { initialize, readNext, readPrev, seek },
   } = useManga()
   const { data: userData, error: userError } = useUserData()
 
@@ -54,6 +54,21 @@ const Viewer: NextPage = () => {
     [currentMangaIndex, readNext, readPrev, user_id]
   )
 
+  const reachPageHandler = useCallback(
+    (idx: number, page: number) => {
+      if (currentMangaIndex === undefined) {
+        return
+      }
+
+      if (idx !== currentMangaIndex) {
+        return
+      }
+      seek(page)
+      console.log('seek', page)
+    },
+    [currentMangaIndex, seek]
+  )
+
   if (error || userError) {
     return <div>Failed to load</div>
   }
@@ -81,6 +96,8 @@ const Viewer: NextPage = () => {
               manga={mangaEle}
               idx={i}
               reachHandler={reachHandler}
+              reachPageHandler={reachPageHandler}
+              currentPage={mangaEle.pageIndex}
             />
           </div>
         )
@@ -128,15 +145,58 @@ interface ViewerPageRowProps {
   manga: MangaState
   idx: number
   reachHandler: (_idx: number) => void
+  reachPageHandler: (_idx: number, _page: number) => void
+  currentPage: number
 }
 const ViewerPageRow: React.FC<ViewerPageRowProps> = ({
   manga,
   idx,
   reachHandler,
+  reachPageHandler,
+  currentPage,
 }) => {
   const client = useClient()
 
   const ref = useRef<HTMLDivElement>(null)
+
+  const pagesRef = useRef<Array<React.RefObject<HTMLDivElement>>>([])
+  Array.from({ length: manga.page_count }).forEach((_, i) => {
+    if (pagesRef.current[i] === undefined) {
+      pagesRef.current[i] = React.createRef<HTMLDivElement>()
+    }
+  })
+
+  const onClickHandler = useCallback(
+    (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+      if (ref.current === null) {
+        return
+      }
+
+      const rect = ref.current.getBoundingClientRect()
+      const x = e.clientX - rect.left
+
+      if (currentPage === manga.page_count - 1) {
+        return
+      }
+
+      if (x < rect.width / 3) {
+        pagesRef.current[currentPage + 1].current?.scrollIntoView({
+          behavior: 'smooth',
+        })
+      } else if (x > (rect.width * 2) / 3) {
+        if (currentPage === 0) {
+          return
+        }
+        pagesRef.current[currentPage - 1].current?.scrollIntoView({
+          behavior: 'smooth',
+        })
+      } else {
+        /* TODO: toggle menu */
+        console.log('toggle menu')
+      }
+    },
+    [currentPage, manga.page_count]
+  )
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -166,30 +226,82 @@ const ViewerPageRow: React.FC<ViewerPageRowProps> = ({
   }, [idx, reachHandler])
 
   return (
-    <PageContainer ref={ref}>
+    <PageContainer ref={ref} onClick={onClickHandler}>
       {Array.from({ length: manga.page_count - 1 }).map((_, i) => {
-        return <ViewerPage key={i} image_url={imageUrl(client, manga.id, i)} />
+        return (
+          <PageElement key={i} ref={pagesRef.current[i]}>
+            <ViewerPage
+              image_url={imageUrl(client, manga.id, i)}
+              idx={idx}
+              page={i}
+              reachPageHandler={reachPageHandler}
+            />
+          </PageElement>
+        )
       })}
-      <ViewerPageInfo
-        cover_image_url={`${manga.base_url}${manga.description.cover_image_url}`}
-        links={manga.description.links}
-        title={manga.description.title}
-        author={manga.description.author}
-      />
+      <PageElement ref={pagesRef.current[manga.page_count - 1]}>
+        <ViewerPageInfo
+          cover_image_url={`${manga.base_url}${manga.description.cover_image_url}`}
+          links={manga.description.links}
+          title={manga.description.title}
+          author={manga.description.author}
+          idx={idx}
+          page={manga.page_count - 1}
+          reachPageHandler={reachPageHandler}
+        />
+      </PageElement>
     </PageContainer>
   )
 }
 
 interface ViewerPageProps {
   image_url: string
+  idx: number
+  page: number
+  reachPageHandler: (_idx: number, _page: number) => void
 }
-const ViewerPage: React.FC<ViewerPageProps> = ({ image_url }) => {
+const ViewerPage: React.FC<ViewerPageProps> = ({
+  image_url,
+  idx,
+  page,
+  reachPageHandler,
+}) => {
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            reachPageHandler(idx, page)
+          }
+        })
+      },
+      {
+        root: null,
+        rootMargin: '0px',
+        threshold: 0.5,
+      }
+    )
+
+    if (ref.current === null) {
+      return
+    }
+
+    observer.observe(ref.current)
+
+    return () => {
+      observer.disconnect()
+    }
+  }, [idx, page, reachPageHandler])
+
   return (
     <PageElement
       css={(theme) => css`
         background-color: ${theme.background.primary};
         position: relative;
       `}
+      ref={ref}
     >
       <Image
         src={image_url}
@@ -207,19 +319,55 @@ interface ViewerPageInfoProps {
   links: Shop[]
   title: string
   author: string
+  idx: number
+  page: number
+  reachPageHandler: (_idx: number, _page: number) => void
 }
 export const ViewerPageInfo: React.FC<ViewerPageInfoProps> = ({
   cover_image_url,
   links,
   title,
   author,
+  idx,
+  page,
+  reachPageHandler,
 }) => {
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            reachPageHandler(idx, page)
+          }
+        })
+      },
+      {
+        root: null,
+        rootMargin: '0px',
+        threshold: 0.5,
+      }
+    )
+
+    if (ref.current === null) {
+      return
+    }
+
+    observer.observe(ref.current)
+
+    return () => {
+      observer.disconnect()
+    }
+  }, [idx, page, reachPageHandler])
+
   return (
     <PageElement
       css={css`
         display: flex;
         flex-direction: column;
       `}
+      ref={ref}
     >
       <div
         css={(theme) => css`
