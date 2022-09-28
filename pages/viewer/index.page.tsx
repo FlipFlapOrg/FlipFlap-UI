@@ -456,7 +456,7 @@ export const ViewerPageInfo: React.FC<ViewerPageInfoProps> = ({
             onClick={favoriteHandler}
             count={favorite_count}
           />
-          <ShareButton url='' />
+          <ShareButton url={`/share?id=${manga_id}`} />
         </div>
       </div>
       <div
