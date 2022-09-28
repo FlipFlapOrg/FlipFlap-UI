@@ -1,3 +1,4 @@
+import styled from '@emotion/styled'
 import BookmarkListItem from './bookmarkListItem'
 import { Bookmark } from 'lib/bookmarkData'
 
@@ -7,12 +8,18 @@ interface Props {
 
 const BookmarkList = (props: Props) => {
   return (
-    <div>
+    <Container>
       {props.bookmarks.map((bookmark) => (
         <BookmarkListItem bookmark={bookmark} key={bookmark.id} />
       ))}
-    </div>
+    </Container>
   )
 }
+
+const Container = styled.div`
+  margin: 0 auto;
+  width: 100%;
+  max-width: 640px;
+`
 
 export default BookmarkList
