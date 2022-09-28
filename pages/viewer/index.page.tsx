@@ -64,7 +64,6 @@ const Viewer: NextPage = () => {
         return
       }
       seek(page)
-      console.log('seek', page)
     },
     [currentMangaIndex, seek]
   )
