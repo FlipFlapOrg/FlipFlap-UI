@@ -3,6 +3,9 @@ import styled from '@emotion/styled'
 import { NextPage } from 'next'
 import Image from 'next/image'
 import React, { useCallback, useEffect, useMemo, useRef } from 'react'
+import BookmarkButton from './components/BookmarkButton'
+import FavoriteButton from './components/FavoriteButton'
+import ShareButton from './components/ShareButton'
 import { SkeltonCircle } from './components/Skeletons'
 import { Client, useClient } from 'api'
 import { Shop } from 'api/parser/manga'
@@ -95,6 +98,7 @@ const Viewer: NextPage = () => {
             <ViewerPageRow
               manga={mangaEle}
               idx={i}
+              user_id={user_id}
               reachHandler={reachHandler}
               reachPageHandler={reachPageHandler}
               currentPage={mangaEle.pageIndex}
@@ -144,6 +148,7 @@ const PageElement = styled.div`
 interface ViewerPageRowProps {
   manga: MangaState
   idx: number
+  user_id: string
   reachHandler: (_idx: number) => void
   reachPageHandler: (_idx: number, _page: number) => void
   currentPage: number
@@ -151,6 +156,7 @@ interface ViewerPageRowProps {
 const ViewerPageRow: React.FC<ViewerPageRowProps> = ({
   manga,
   idx,
+  user_id,
   reachHandler,
   reachPageHandler,
   currentPage,
@@ -246,8 +252,13 @@ const ViewerPageRow: React.FC<ViewerPageRowProps> = ({
           title={manga.description.title}
           author={manga.description.author}
           idx={idx}
+          user_id={user_id}
           page={manga.page_count - 1}
           reachPageHandler={reachPageHandler}
+          isBookmark={manga.is_bookmarked}
+          isFavorite={manga.is_favorite}
+          manga_id={manga.id}
+          favorite_count={manga.favorite_count}
         />
       </PageElement>
     </PageContainer>
@@ -321,6 +332,11 @@ interface ViewerPageInfoProps {
   author: string
   idx: number
   page: number
+  isBookmark: boolean
+  isFavorite: boolean
+  manga_id: string
+  user_id: string
+  favorite_count: number
   reachPageHandler: (_idx: number, _page: number) => void
 }
 export const ViewerPageInfo: React.FC<ViewerPageInfoProps> = ({
@@ -330,9 +346,31 @@ export const ViewerPageInfo: React.FC<ViewerPageInfoProps> = ({
   author,
   idx,
   page,
+  isBookmark,
+  isFavorite,
+  favorite_count,
+  user_id,
+  manga_id,
   reachPageHandler,
 }) => {
   const ref = useRef<HTMLDivElement>(null)
+  const { mutate } = useManga()
+
+  const bookmarkHandler = useCallback(() => {
+    if (isBookmark === true) {
+      mutate.removeBookmark(user_id, manga_id)
+    } else {
+      mutate.addBookmark(user_id, manga_id)
+    }
+  }, [isBookmark, manga_id, mutate, user_id])
+
+  const favoriteHandler = useCallback(() => {
+    if (isFavorite === true) {
+      mutate.unfavorite(user_id, manga_id)
+    } else {
+      mutate.favorite(user_id, manga_id)
+    }
+  }, [isFavorite, manga_id, mutate, user_id])
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -412,9 +450,13 @@ export const ViewerPageInfo: React.FC<ViewerPageInfoProps> = ({
             margin-top: 12px;
           `}
         >
-          <SkeltonCircle size={48} />
-          <SkeltonCircle size={60} />
-          <SkeltonCircle size={48} />
+          <BookmarkButton isBookmark={isBookmark} onClick={bookmarkHandler} />
+          <FavoriteButton
+            isFavorite={isFavorite}
+            onClick={favoriteHandler}
+            count={favorite_count}
+          />
+          <ShareButton url='' />
         </div>
       </div>
       <div
