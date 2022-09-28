@@ -294,6 +294,16 @@ const ViewerPageRow: React.FC<ViewerPageRowProps> = ({
     (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
       e.preventDefault()
 
+      const rect = ref.current?.getBoundingClientRect()
+      if (rect === undefined) {
+        return
+      }
+
+      const x = e.clientX - rect.left
+      if (x < rect.width / 3 || x > (rect.width * 2) / 3) {
+        return
+      }
+
       if (manga.is_favorite) {
         unfavorite(user_id, manga.id)
       } else {
