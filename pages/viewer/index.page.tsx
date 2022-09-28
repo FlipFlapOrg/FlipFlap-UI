@@ -21,14 +21,13 @@ const Viewer: NextPage = () => {
   const {
     data: { manga, currentMangaIndex },
     error,
-    mutate,
+    mutate: { initialize },
   } = useManga()
   const { data: userData, error: userError } = useUserData()
 
   useEffect(() => {
-    mutate.initialize(userData?.id ?? 'unknown')
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+    initialize(userData?.id ?? 'unknown')
+  }, [initialize, userData?.id])
 
   const currentManga = useMemo(() => {
     if (manga === undefined || currentMangaIndex === undefined) {
@@ -92,6 +91,8 @@ const PageElement = styled.div`
   flex-shrink: 0;
   flex-basis: 100%;
 `
+
+interface ViewerPageRow {}
 
 interface ViewerPageProps {
   image_url: string
