@@ -11,6 +11,7 @@ import { Client, useClient } from 'api'
 import { Shop } from 'api/parser/manga'
 import { MangaState, useManga } from 'lib/mangaData'
 import { useUserData } from 'lib/userData'
+import { serviceIcon } from 'lib/serviceIcon'
 
 /**
  * page は 0-indexed
@@ -509,6 +510,7 @@ interface LinksCardProps {
   url: string
 }
 export const LinksCard: React.FC<LinksCardProps> = ({ name, url }) => {
+  const icon = serviceIcon(name)
   return (
     <a
       href={url}
@@ -532,7 +534,17 @@ export const LinksCard: React.FC<LinksCardProps> = ({ name, url }) => {
           align-items: center;
         `}
       >
-        <SkeltonCircle size={36} />
+        <Image
+          src={icon}
+          css={css`
+            border-radius: 50%;
+          `}
+          width={48}
+          height={48}
+          alt='logo'
+          objectFit='contain'
+          quality={100}
+        />
         <span
           css={(theme) => css`
             margin-left: 16px;
