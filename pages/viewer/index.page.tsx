@@ -38,8 +38,6 @@ const Viewer: NextPage = () => {
         return
       }
 
-      console.log('reachHandler', idx, currentMangaIndex)
-
       if (idx === currentMangaIndex) {
         return
       }
