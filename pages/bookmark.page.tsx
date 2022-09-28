@@ -4,6 +4,7 @@ import { NextPage } from 'next'
 import Link from 'next/link'
 import BookmarkList from 'components/bookmark/bookmarkList'
 import { useBookmarks } from 'lib/bookmarkData'
+import { Toggle } from 'components/Toggle'
 
 const BookMark: NextPage = () => {
   const { data: bookmarks, isLoading } = useBookmarks()
@@ -12,6 +13,17 @@ const BookMark: NextPage = () => {
 
   return (
     <Container>
+      <Toggle
+        state='bookmark'
+        cssProp={css`
+          position: fixed;
+          z-index: 1;
+          bottom: 16px;
+          right: 0;
+          left: 0;
+          margin: 0 auto;
+        `}
+      />
       <Header>
         <HeaderContent>
           <Link href={'/'}>
