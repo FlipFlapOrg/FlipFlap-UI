@@ -56,7 +56,7 @@ const Header = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #e9f3fc;
+  background-color: #fff7da;
 `
 
 const H1 = styled.h1`
