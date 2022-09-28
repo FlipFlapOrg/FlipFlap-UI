@@ -1,4 +1,6 @@
+import { useMemo } from 'react'
 import useSWR from 'swr'
+import { useUserData } from './userData'
 import { Client, useClient } from 'api'
 import { bookmarks } from 'api/users/[user_id]/bookmarks'
 
@@ -29,10 +31,15 @@ export const getBookmarks = async (
 
 export const useBookmarks = () => {
   const client = useClient()
-  //TODO: userID
-  const { data, error } = useSWR('state:bookmarks', async (_) => {
-    return getBookmarks(client, 'tesso')
+  const { data: userData, error: userError } = useUserData()
+
+  const user_id = useMemo(() => {
+    return userData?.id ?? 'unknown'
+  }, [userData?.id])
+
+  const { data, error } = useSWR(['state:bookmarks', user_id], async (_) => {
+    return getBookmarks(client, user_id)
   })
 
-  return { data, isLoading: !error && !data, error }
+  return { data, isLoading: !error && !data && !userError }
 }
