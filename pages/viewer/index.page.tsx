@@ -309,6 +309,8 @@ const ViewerPage: React.FC<ViewerPageProps> = ({
         layout='fill'
         objectFit='contain'
         draggable={false}
+        priority={true}
+        quality={30}
       />
     </PageElement>
   )
