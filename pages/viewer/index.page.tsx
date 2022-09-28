@@ -380,7 +380,23 @@ const ViewerPageHeader: React.FC<ViewerPageHeaderProps> = ({
         </div>
       </div>
       <div>
-        <button onClick={toggleBookmark}>{isBookmarked ? '-' : '+'}</button>
+        <button
+          onClick={toggleBookmark}
+          css={css`
+            border: none;
+            background-color: transparent;
+            cursor: pointer;
+          `}
+        >
+          <Image
+            src={
+              isBookmarked ? '/icons/bookmark-fill.svg' : '/icons/bookmark.svg'
+            }
+            width={40}
+            height={40}
+            alt=''
+          />
+        </button>
       </div>
     </Header>
   )
