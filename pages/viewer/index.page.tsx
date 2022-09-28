@@ -49,6 +49,33 @@ const Viewer: NextPage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialize, user_id])
 
+  const [delayDrawTimer, setDelayDrawTimer] = useState<NodeJS.Timeout | null>(
+    null
+  )
+  const [stopDraw, setStopDraw] = useState(true)
+  useEffect(() => {
+    setStopDraw(true)
+    if (delayDrawTimer) {
+      clearTimeout(delayDrawTimer)
+    }
+    setDelayDrawTimer(
+      setTimeout(
+        () => {
+          setDelayDrawTimer(null)
+          setStopDraw(false)
+        },
+        id ? 250 : 600
+      )
+    )
+    return () => {
+      setStopDraw(false)
+      if (delayDrawTimer) {
+        clearTimeout(delayDrawTimer)
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   const reachHandler = useCallback(
     (idx: number) => {
       if (currentMangaIndex === undefined) {
@@ -90,11 +117,27 @@ const Viewer: NextPage = () => {
   }
 
   if (
+    stopDraw ||
     manga === undefined ||
     currentMangaIndex === undefined ||
     userData === undefined
   ) {
-    return <SkeltonCircle size={300} />
+    return (
+      <PageContainer
+        css={css`
+          display: grid;
+          place-items: center;
+        `}
+      >
+        <Image
+          width={2014}
+          height={1445}
+          src='/flip-kun.svg'
+          objectFit='contain'
+          alt='loading'
+        />
+      </PageContainer>
+    )
   }
 
   return (
