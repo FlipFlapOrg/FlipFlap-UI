@@ -13,7 +13,7 @@ export const bookmarks = (client: Client) => async (user_id: string) => {
 
 export const addBookmarks =
   (client: Client) => async (user_id: string, manga_id: string) => {
-    const res = await fetch(`${client.baseUrl}/users/${user_id}/bookmarks`, {
+    await fetch(`${client.baseUrl}/users/${user_id}/bookmarks`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -22,8 +22,6 @@ export const addBookmarks =
         manga_id,
       }),
     })
-    const data = await res.json()
-    return data
   }
 
 export const removeBookmarks =
@@ -37,5 +35,4 @@ export const removeBookmarks =
         manga_id,
       }),
     })
-    return
   }

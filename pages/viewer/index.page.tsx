@@ -2,16 +2,24 @@ import { css } from '@emotion/react'
 import styled from '@emotion/styled'
 import { NextPage } from 'next'
 import Image from 'next/image'
-import React, { useCallback, useEffect, useMemo, useRef } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import BookmarkButton from './components/BookmarkButton'
 import FavoriteButton from './components/FavoriteButton'
 import ShareButton from './components/ShareButton'
 import { SkeltonCircle } from './components/Skeletons'
 import { Client, useClient } from 'api'
 import { Shop } from 'api/parser/manga'
+import { Toggle } from 'components/Toggle'
 import { MangaState, useManga } from 'lib/mangaData'
 import { useUserData } from 'lib/userData'
 import { serviceIcon } from 'lib/serviceIcon'
+
+export const hideScrollBar = css`
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+`
 
 /**
  * page は 0-indexed
@@ -68,7 +76,6 @@ const Viewer: NextPage = () => {
         return
       }
       seek(page)
-      console.log('seek', page)
     },
     [currentMangaIndex, seek]
   )
@@ -86,30 +93,41 @@ const Viewer: NextPage = () => {
   }
 
   return (
-    <PageContainerY>
-      {manga.map((mangaEle, i) => {
-        return (
-          <div
-            key={i}
-            css={css`
-              scroll-snap-align: start;
-              scroll-snap-stop: always;
-            `}
-          >
-            <ViewerPageRow
-              manga={mangaEle}
-              idx={i}
-              user_id={user_id}
-              reachHandler={reachHandler}
-              reachPageHandler={reachPageHandler}
-              currentPage={mangaEle.pageIndex}
-            />
-          </div>
-        )
-      })}
-    </PageContainerY>
+    <PageContainer>
+      <PageContainerY>
+        {manga.map((mangaEle, i) => {
+          return (
+            <div
+              key={i}
+              css={css`
+                scroll-snap-align: start;
+                scroll-snap-stop: always;
+              `}
+            >
+              <ViewerPageRow
+                manga={mangaEle}
+                idx={i}
+                user_id={user_id}
+                reachHandler={reachHandler}
+                reachPageHandler={reachPageHandler}
+                currentPage={mangaEle.pageIndex}
+              />
+            </div>
+          )
+        })}
+      </PageContainerY>
+    </PageContainer>
   )
 }
+
+const PageContainer = styled.div`
+  margin: 0 auto;
+  max-width: 640px;
+  width: 100%;
+  height: 100vh;
+  position: relative;
+  overflow: hidden;
+`
 
 const PageContainerY = styled.div`
   margin: 0 auto;
@@ -122,9 +140,10 @@ const PageContainerY = styled.div`
   scroll-snap-type: y mandatory;
   display: flex;
   flex-direction: column;
+  ${hideScrollBar}
 `
 
-const PageContainer = styled.div`
+const PageContainerX = styled.div`
   margin: 0 auto;
   max-width: 640px;
   width: 100%;
@@ -135,6 +154,7 @@ const PageContainer = styled.div`
   scroll-snap-type: x mandatory;
   display: flex;
   flex-direction: row-reverse;
+  ${hideScrollBar}
 `
 
 const PageElement = styled.div`
@@ -163,6 +183,20 @@ const ViewerPageRow: React.FC<ViewerPageRowProps> = ({
   currentPage,
 }) => {
   const client = useClient()
+  const {
+    mutate: { addBookmark, removeBookmark },
+  } = useManga()
+
+  const onBookmark = useCallback(
+    (to: boolean) => {
+      if (to) {
+        addBookmark(user_id, manga.id)
+      } else {
+        removeBookmark(user_id, manga.id)
+      }
+    },
+    [addBookmark, manga.id, removeBookmark, user_id]
+  )
 
   const ref = useRef<HTMLDivElement>(null)
 
@@ -172,6 +206,8 @@ const ViewerPageRow: React.FC<ViewerPageRowProps> = ({
       pagesRef.current[i] = React.createRef<HTMLDivElement>()
     }
   })
+
+  const [isHeaderShow, setIsHeaderShow] = useState(false)
 
   const onClickHandler = useCallback(
     (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
@@ -190,6 +226,7 @@ const ViewerPageRow: React.FC<ViewerPageRowProps> = ({
         pagesRef.current[currentPage + 1].current?.scrollIntoView({
           behavior: 'smooth',
         })
+        setIsHeaderShow(false)
       } else if (x > (rect.width * 2) / 3) {
         if (currentPage === 0) {
           return
@@ -197,9 +234,9 @@ const ViewerPageRow: React.FC<ViewerPageRowProps> = ({
         pagesRef.current[currentPage - 1].current?.scrollIntoView({
           behavior: 'smooth',
         })
+        setIsHeaderShow(false)
       } else {
-        /* TODO: toggle menu */
-        console.log('toggle menu')
+        setIsHeaderShow((prev) => !prev)
       }
     },
     [currentPage, manga.page_count]
@@ -233,38 +270,136 @@ const ViewerPageRow: React.FC<ViewerPageRowProps> = ({
   }, [idx, reachHandler])
 
   return (
-    <PageContainer ref={ref} onClick={onClickHandler}>
-      {Array.from({ length: manga.page_count - 1 }).map((_, i) => {
-        return (
-          <PageElement key={i} ref={pagesRef.current[i]}>
-            <ViewerPage
-              image_url={imageUrl(client, manga.id, i)}
-              idx={idx}
-              page={i}
-              reachPageHandler={reachPageHandler}
-            />
-          </PageElement>
-        )
-      })}
-      <PageElement ref={pagesRef.current[manga.page_count - 1]}>
-        <ViewerPageInfo
-          cover_image_url={`${manga.base_url}${manga.description.cover_image_url}`}
-          links={manga.description.links}
-          title={manga.description.title}
-          author={manga.description.author}
-          idx={idx}
-          user_id={user_id}
-          page={manga.page_count - 1}
-          reachPageHandler={reachPageHandler}
-          isBookmark={manga.is_bookmarked}
-          isFavorite={manga.is_favorite}
-          manga_id={manga.id}
-          favorite_count={manga.favorite_count}
-        />
-      </PageElement>
-    </PageContainer>
+    <PageElement
+      css={css`
+        position: relative;
+        overflow: hidden;
+      `}
+    >
+      <ViewerPageHeader
+        title={manga.description.title}
+        author={manga.description.author}
+        onBookmark={onBookmark}
+        isBookmarked={manga.is_bookmarked}
+        isShow={isHeaderShow}
+      />
+      <Toggle
+        state='viewer'
+        cssProp={css`
+          position: absolute;
+          z-index: 1;
+          bottom: 16px;
+          right: 0;
+          left: 0;
+          margin: 0 auto;
+
+          transform: ${isHeaderShow || currentPage === manga.page_count - 1
+            ? 'translateY(0px)'
+            : 'translateY(calc(101% + 16px))'};
+          transition: transform 0.2s ease-out;
+        `}
+      />
+      <PageContainerX ref={ref} onClick={onClickHandler}>
+        {Array.from({ length: manga.page_count - 1 }).map((_, i) => {
+          return (
+            <PageElement key={i} ref={pagesRef.current[i]}>
+              <ViewerPage
+                image_url={imageUrl(client, manga.id, i)}
+                idx={idx}
+                page={i}
+                reachPageHandler={reachPageHandler}
+              />
+            </PageElement>
+          )
+        })}
+        <PageElement ref={pagesRef.current[manga.page_count - 1]}>
+          <ViewerPageInfo
+            cover_image_url={`${manga.base_url}${manga.description.cover_image_url}`}
+            links={manga.description.links}
+            title={manga.description.title}
+            author={manga.description.author}
+            idx={idx}
+            user_id={user_id}
+            page={manga.page_count - 1}
+            reachPageHandler={reachPageHandler}
+            isBookmark={manga.is_bookmarked}
+            isFavorite={manga.is_favorite}
+            manga_id={manga.id}
+            favorite_count={manga.favorite_count}
+          />
+        </PageElement>
+      </PageContainerX>
+    </PageElement>
   )
 }
+
+interface ViewerPageHeaderProps {
+  title: string
+  author: string
+  onBookmark: (_to_bookmarked: boolean) => void
+  isBookmarked: boolean
+  isShow?: boolean
+}
+const ViewerPageHeader: React.FC<ViewerPageHeaderProps> = ({
+  title,
+  author,
+  onBookmark,
+  isBookmarked,
+  isShow,
+}) => {
+  const toggleBookmark = useCallback(() => {
+    onBookmark(!isBookmarked)
+  }, [isBookmarked, onBookmark])
+
+  return (
+    <Header
+      css={css`
+        transform: translateY(${isShow ? '0' : '-101%'});
+        transition: transform 0.2s ease-out;
+      `}
+    >
+      <div>
+        <Strong
+          css={css`
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+          `}
+        >
+          {title}
+        </Strong>
+        <div
+          css={css`
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-top: 4px;
+          `}
+        >
+          {author}
+        </div>
+      </div>
+      <div>
+        <button onClick={toggleBookmark}>{isBookmarked ? '-' : '+'}</button>
+      </div>
+    </Header>
+  )
+}
+
+const Header = styled.header`
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 100%;
+  background-color: rgba(243, 249, 255, 0.9);
+  z-index: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 16px;
+
+  transform: translateY(-101%);
+`
 
 interface ViewerPageProps {
   image_url: string
